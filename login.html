@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SQL Injection Demo — {{ mode }} version</title>
+<style>
+    body { font-family: -apple-system, Arial, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; color: #1a1a1a; }
+    h1 { font-size: 1.4rem; }
+    .badge { display: inline-block; padding: 2px 10px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; }
+    .badge.vuln { background: #ffe1e1; color: #b00020; }
+    .badge.secure { background: #e1ffe6; color: #0a7a2e; }
+    form { margin: 20px 0; padding: 16px; border: 1px solid #ddd; border-radius: 8px; }
+    label { display: block; margin-top: 10px; font-size: 0.9rem; }
+    input[type=text], input[type=password] { width: 100%; padding: 8px; box-sizing: border-box; margin-top: 4px; }
+    button { margin-top: 14px; padding: 8px 16px; cursor: pointer; }
+    .error { color: #b00020; }
+    .success { color: #0a7a2e; }
+    pre { background: #f5f5f5; padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 0.85rem; }
+    .hint { font-size: 0.85rem; color: #555; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    td, th { border: 1px solid #ddd; padding: 6px 10px; text-align: left; font-size: 0.9rem; }
+</style>
+</head>
+<body>
+
+<h1>
+    SQL Injection Demo
+    {% if mode == "VULNERABLE" %}
+        <span class="badge vuln">VULNERABLE</span>
+    {% else %}
+        <span class="badge secure">SECURE</span>
+    {% endif %}
+</h1>
+
+<p class="hint">
+    {% if mode == "VULNERABLE" %}
+        This version concatenates form input directly into the SQL query.
+        Try username <code>' OR '1'='1' --</code> with any password.
+    {% else %}
+        This version uses parameterized queries. Try the same payload —
+        it should correctly be rejected.
+    {% endif %}
+</p>
+
+<form method="POST">
+    <label>Username
+        <input type="text" name="username" autocomplete="off">
+    </label>
+    <label>Password
+        <input type="password" name="password" autocomplete="off">
+    </label>
+    <button type="submit">Log in</button>
+</form>
+
+{% if error %}
+    <p class="error">{{ error }}</p>
+{% endif %}
+
+{% if user %}
+    <p class="success">Logged in as <strong>{{ user['username'] }}</strong>
+        {% if user['is_admin'] %}(admin){% endif %}</p>
+
+    {% if notes %}
+        <table>
+            <tr><th>Note ID</th><th>Content</th></tr>
+            {% for n in notes %}
+                <tr><td>{{ n['id'] }}</td><td>{{ n['content'] }}</td></tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+{% endif %}
+
+{% if executed_query %}
+    <p class="hint">Query sent to the database:</p>
+    <pre>{{ executed_query }}</pre>
+{% endif %}
+
+</body>
+</html>
